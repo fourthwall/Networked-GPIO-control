@@ -2,20 +2,22 @@ import RPi.GPIO as GPIO
 import time
 import socket
 import sys
+import re
+pattern = re.compile('([0-9,])+(:[0-9]+)')
 def runsequence(name):
     if not name in sequences:
         print("Sequence not found")
         return
-    GPIO.cleanup()
     GPIO.setmode(GPIO.BOARD)
     for line in sequences[name]:
         for pin in line[0]:
+            print("Setting up pin: " + str(pin))
             GPIO.setup(pin, GPIO.OUT)
         for x in (GPIO.HIGH, GPIO.LOW):
             for pin in line[0]:
                 GPIO.output(pin, x)
             if x == GPIO.HIGH:
-                time.sleep(line[1])
+                time.sleep(line[1] /1000)
     GPIO.cleanup()
 
 
@@ -40,7 +42,7 @@ with open('config.txt') as f:
             lines = []
         else:
             sys.exit("Parse error: " + l)
-    if sequences.isempty():
+    if not sequences:
         sys.exit("Blank configuration file")
 
 ip = "0.0.0.0"
